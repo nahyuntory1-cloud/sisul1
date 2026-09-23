@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>학교 시설 수리 접수</title>
+  <style>
+    :root{font-family:system-ui,-apple-system,'Malgun Gothic',sans-serif;color:#172033;background:#f3f6fb}
+    *{box-sizing:border-box}body{margin:0;padding:28px 16px}.wrap{max-width:720px;margin:auto}
+    header{margin-bottom:22px}h1{font-size:28px;margin:0 0 8px}.intro{color:#536278;line-height:1.6;margin:0}
+    .card{background:white;border:1px solid #e0e7f0;border-radius:18px;padding:28px;box-shadow:0 8px 30px #2334520c}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}.field{display:flex;flex-direction:column;gap:7px;margin-bottom:18px}
+    label{font-weight:700;font-size:14px}small{color:#65758b;font-weight:400}.required{color:#c42d42}
+    input,select,textarea{width:100%;padding:12px 13px;border:1px solid #cbd5e1;border-radius:10px;font:inherit;background:white;color:#172033}
+    textarea{min-height:145px;resize:vertical}input:focus,select:focus,textarea:focus{outline:3px solid #bfd9ff;border-color:#2170d5}
+    button{border:0;border-radius:10px;background:#165fc0;color:white;padding:14px 22px;font:inherit;font-weight:700;cursor:pointer;width:100%}
+    button:disabled{opacity:.55;cursor:wait}.note{padding:12px 14px;background:#f0f6ff;border-radius:10px;color:#36536f;font-size:14px;line-height:1.6;margin:0 0 22px}
+    #message{margin-top:16px;padding:14px;border-radius:10px;line-height:1.5;display:none}#message.success{display:block;background:#e9f8f0;color:#125838}#message.error{display:block;background:#fff0f0;color:#a11d2e}
+    @media(max-width:560px){.grid{grid-template-columns:1fr;gap:0}.card{padding:20px}h1{font-size:24px}}
+  </style>
+</head>
+<body><main class="wrap">
+  <header><h1>🔧 학교 시설 수리 접수</h1><p class="intro">고장 난 시설을 알려주시면 담당자가 확인하겠습니다.</p></header>
+  <section class="card"><p class="note">전기 누전·누수 등 즉시 조치가 필요한 상황은 접수와 함께 행정실에 직접 연락해 주세요. 신청 내용은 시설 수리 업무에 사용됩니다.</p>
+    <form id="requestForm">
+      <div class="grid"><div class="field"><label for="name">신청자 <span class="required">*</span></label><input id="name" name="name" maxlength="40" required autocomplete="name" placeholder="성함"></div>
+      <div class="field"><label for="contact">연락처 <small>(선택)</small></label><input id="contact" name="contact" maxlength="50" placeholder="내선번호 또는 연락 가능한 번호"></div></div>
+      <div class="field"><label for="location">수리 장소 <span class="required">*</span></label><input id="location" name="location" maxlength="100" required placeholder="예: 본관 2층 2-3반 교실 앞 복도"></div>
+      <div class="grid"><div class="field"><label for="category">시설 분류 <span class="required">*</span></label><select id="category" name="category" required><option value="">선택해 주세요</option><option>전기·조명</option><option>냉난방</option><option>수도·배수</option><option>화장실</option><option>문·창호</option><option>책걸상·비품</option><option>기타</option></select></div>
+      <div class="field"><label for="urgency">긴급도 <span class="required">*</span></label><select id="urgency" name="urgency" required><option value="일반">일반</option><option value="긴급">긴급</option></select></div></div>
+      <div class="field"><label for="description">고장 내용 <span class="required">*</span></label><textarea id="description" name="description" maxlength="1000" required placeholder="증상과 발생 시점을 적어 주세요. 학생 이름 등 불필요한 개인정보는 적지 마세요."></textarea></div>
+      <button id="submitButton" type="submit">수리 신청 접수</button><div id="message" role="status" aria-live="polite"></div>
+    </form>
+  </section>
+</main>
+<script>
+  // 아래 URL을 배포한 Apps Script 웹 앱 URL(/exec)로 바꾸세요.
+  const APPS_SCRIPT_URL = 'PASTE_APPS_SCRIPT_WEB_APP_URL_HERE';
+  const form = document.getElementById('requestForm');
+  const button = document.getElementById('submitButton');
+  const message = document.getElementById('message');
+  form.addEventListener('submit', function(event) {
+    event.preventDefault();
+    if (!form.reportValidity()) return;
+    const data = Object.fromEntries(new FormData(form).entries());
+    button.disabled = true;
+    button.textContent = '접수 중...';
+    message.className = '';
+    message.style.display = 'none';
+    if (APPS_SCRIPT_URL === 'PASTE_APPS_SCRIPT_WEB_APP_URL_HERE') {
+      message.className = 'error';
+      message.style.display = 'block';
+      message.textContent = 'Apps Script 웹 앱 URL을 HTML 코드에 먼저 입력해 주세요.';
+      button.disabled = false;
+      button.textContent = '수리 신청 접수';
+      return;
+    }
+    // GitHub Pages와 Apps Script는 다른 출처이므로 no-cors로 전송합니다.
+    // 브라우저에서 응답 본문을 읽을 수 없어서 최종 저장 여부는 구글 시트에서 확인해야 합니다.
+    fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(data)
+    }).then(function() {
+      message.className = 'success';
+      message.style.display = 'block';
+      message.textContent = '신청 정보를 전송했습니다. 처음에는 구글 시트에 접수 행이 추가됐는지 확인해 주세요.';
+      form.reset();
+    }).catch(function() {
+      message.className = 'error';
+      message.style.display = 'block';
+      message.textContent = '전송에 실패했습니다. 네트워크와 Apps Script 웹 앱 URL을 확인해 주세요.';
+    }).finally(function() {
+      button.disabled = false;
+      button.textContent = '수리 신청 접수';
+    });
+  });
+</script></body></html>
