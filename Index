@@ -156,7 +156,7 @@
 
 <script>
   // ▼ Apps Script 웹앱 주소 (이 HTML을 구글 사이트 등 외부에 따로 올릴 때만 입력)
-  const SCRIPT_URL = '';
+  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw39wkp51PVfufyC7dafx-HN1hkGjPO6m8c09oP9lQWafSH_PP_wExyZmCSeZVRMc-j4g/exec';
 
   const form = document.getElementById('form');
   const errEl = document.getElementById('err');
